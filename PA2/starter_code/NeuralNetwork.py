@@ -44,7 +44,7 @@ def fit_NeuralNetwork(X_train,y_train,alpha,hidden_layer_sizes,epochs):
             x_ret, s = forwardPropagation(x, weights)
             g = backPropagation(x_ret, y_train[index], s, weights)
             weights = updateWeights(weights, g, alpha)
-
+            errN += errorPerSample(x_ret, y_train[index])
         err[e]=errN/N 
     return err, weights
     
@@ -103,7 +103,7 @@ def backPropagation(X,y_n,s,weights):
         for j in range(len(s[i-1])): #number of nodes in layer i - 1
             for k in range(len(s[i])): #number of nodes in layer i
                 #TODO: calculate delta at node j
-                delN[j]=delN[j]+ WeightsNextLayer[j,k]*delNextLayer[k]*derivativeActivation(sCurrLayer[j])# Fill in the rest
+                delN[j]=delN[j]+ WeightsNextLayer[j, k]*delNextLayer[k]*derivativeActivation(sCurrLayer[j])# Fill in the rest
         
         delL.insert(0,delN)
     
@@ -131,7 +131,7 @@ def updateWeights(weights,g,alpha):
         for j in range(rows):
             for k in range(cols):
                 #TODO: Gradient Descent Update
-                currWeight[j,k]= currWeight[j,k] + alpha*currG[j,k]
+                currWeight[j,k]= currWeight[j,k] - alpha*currG[j,k]
         nW.append(currWeight)
     return nW
 
@@ -155,9 +155,9 @@ def derivativeOutput(s):
 
 def errorf(x_L,y):
     if y == 1:
-        return np.log(x_L)
+        return -np.log(x_L)
     if y == -1:
-        return np.log(1-x_L)
+        return -np.log(1-x_L)
 
 def derivativeError(x_L,y):
     if y == 1:
@@ -166,8 +166,15 @@ def derivativeError(x_L,y):
         return 1/(1-x_L)
 
 def pred(x_n,weights):
-    stub = 0
-    return stub
+    retX,retS= forwardPropagation(x_n, weights)
+    l=len(retX)
+
+    # Return -1 if probability lesser than 0.5
+    # Else return 1
+    if retX[l-1]<0.5:
+        return -1
+    else:
+        return 1
     
 def confMatrix(X_train,y_train,w):
     N = X_train.shape[0]
@@ -210,8 +217,11 @@ def confMatrix(X_train,y_train,w):
 
 def plotErr(e,epochs):
     #Enter implementation here
-    stub = 0
-    return stub
+    x=[]
+    for i in range(epochs):
+        x.append(i)
+    plt.plot(x, e)
+    plt.show() 
     
 def test_SciKit(X_train, X_test, Y_train, Y_test):
     pct = MLPClassifier(solver="adam", alpha=1e-5, hidden_layer_sizes=(30,10), random_state=1)
