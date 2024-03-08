@@ -102,8 +102,8 @@ def backPropagation(X,y_n,s,weights):
         #Remember: dL/dS[i] = dL/dS[i+1] * W(which W???) * activation
         for j in range(len(s[i-1])): #number of nodes in layer i - 1
             for k in range(len(s[i])): #number of nodes in layer i
-                #TODO: calculate delta at node j
-                delN[j]=delN[j]+ WeightsNextLayer[j, k]*delNextLayer[k]*derivativeActivation(sCurrLayer[j])# Fill in the rest
+                # Delta of node j is previous delta of node j + dL/dS[i+1]*W[i+1]*s[i]
+                delN[j]=delN[j]+ WeightsNextLayer[j, k]*delNextLayer[k]*derivativeActivation(sCurrLayer[j])
         
         delL.insert(0,delN)
     
@@ -117,7 +117,7 @@ def backPropagation(X,y_n,s,weights):
         currdelL=delL[i]
         for j in range(rows):
             for k in range(cols):
-                #TODO: Calculate the gradient using currX and currdelL
+                # Distribute delta over each x in current layer to get gradient of loss per x_j in x_n
                 gL[j,k]= np.dot(currX[j],currdelL[k])
         g.append(gL)
     return g
@@ -130,12 +130,13 @@ def updateWeights(weights,g,alpha):
         currG=g[i]
         for j in range(rows):
             for k in range(cols):
-                #TODO: Gradient Descent Update
+                #Stochastic Gradient Descent using x_n with learning rate alpha
                 currWeight[j,k]= currWeight[j,k] - alpha*currG[j,k]
         nW.append(currWeight)
     return nW
 
 def activation(s):
+    #ReLU activation function
     if s < 0:
         return 0
     else:
@@ -148,24 +149,31 @@ def derivativeActivation(s):
         return 1
     
 def outputf(s):
+    #sigmoid activation function 1/(1+e^-s)
     return (1/(1+np.exp(-s)))
 
 def derivativeOutput(s):
+    # derivative of sigmoid activation function sigmoid(s)*(1-sigmoid(s))
     return outputf(s)*(1-outputf(s))
 
 def errorf(x_L,y):
+    #if label = 1, error = -log(x_L)
     if y == 1:
         return -np.log(x_L)
+    #if label = -1, error = -log(1-x_L)
     if y == -1:
         return -np.log(1-x_L)
 
 def derivativeError(x_L,y):
+    #if label = 1, derivative of error = -1/x_L
     if y == 1:
         return -1/x_L
+    #if label = -1, derivative of error = 1/(1-x_L)
     if y == -1:
         return 1/(1-x_L)
 
 def pred(x_n,weights):
+    # Run forward propagation to get prediction
     retX,retS= forwardPropagation(x_n, weights)
     l=len(retX)
 
@@ -216,16 +224,21 @@ def confMatrix(X_train,y_train,w):
     return result
 
 def plotErr(e,epochs):
-    #Enter implementation here
+    #create a list for the epochs
     x=[]
     for i in range(epochs):
         x.append(i)
+    
+    #plot epochs vs error
     plt.plot(x, e)
     plt.show() 
     
 def test_SciKit(X_train, X_test, Y_train, Y_test):
+    # Create classifier
     pct = MLPClassifier(solver="adam", alpha=1e-5, hidden_layer_sizes=(30,10), random_state=1)
+    # Train classifier
     pct.fit(X_train, Y_train)
+    # Test classifier and output confusion matrix
     conf_mat = confusion_matrix(Y_test, pct.predict(X_test))
     return conf_mat
 
