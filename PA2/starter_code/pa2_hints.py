@@ -120,6 +120,7 @@ def backPropagation(X,y_n,s,weights):
         g.append(gL)
     return g
 
+
 def updateWeights(weights,g,alpha):
     nW=[]
     for i in range(len(weights)):
@@ -167,9 +168,9 @@ def pred(x_n,weights):
     # Return -1 if probability lesser than 0.5
     # Else return 1
     if retX[l-1]<0.5:
-        return 
+        return -1
     else:
-        return     
+        return 1
     
 def confMatrix(X_train,y_train,w):
     #This is a copy from PA1
